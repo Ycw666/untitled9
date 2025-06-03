@@ -84,7 +84,7 @@ const db = new sqlite3.Database(dbPath, (err) => {
                         }
                     );
                 });
-                console.log('批量價格資料已插入完成');
+                console.log('批量價格資料插入完成');
             }
         });
     }
