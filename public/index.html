@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>查詢相機歷史價格（依日期）</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', '微軟正黑體', Arial, sans-serif;
+      background: #f7f7fa;
+      margin: 0;
+      padding: 0;
+    }
+    h1, h2 {
+      text-align: center;
+      color: #2d3a4b;
+    }
+    .container {
+      max-width: 700px;
+      margin: 40px auto;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      padding: 32px 24px 24px 24px;
+    }
+    #dateInput, button {
+      font-size: 1rem;
+      padding: 8px 12px;
+      border-radius: 5px;
+      border: 1px solid #bfc4cc;
+      margin-right: 8px;
+    }
+    button {
+      background: #4f8cff;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button:hover {
+      background: #2563c6;
+    }
+    ul#resultList {
+      list-style: none;
+      padding: 0;
+      margin: 16px 0 0 0;
+      color: #2d3a4b;
+      font-size: 1.1rem;
+    }
+    table#priceTable {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 24px;
+      background: #fff;
+    }
+    table#priceTable th, table#priceTable td {
+      border: 1px solid #e0e3e8;
+      padding: 10px 8px;
+      text-align: center;
+    }
+    table#priceTable th {
+      background: #eaf1fb;
+      color: #2d3a4b;
+      font-weight: 600;
+    }
+    table#priceTable tr:nth-child(even) {
+      background: #f5f7fa;
+    }
+    @media (max-width: 600px) {
+      .container { padding: 12px 2px; }
+      table#priceTable th, table#priceTable td { font-size: 0.95rem; padding: 6px 2px; }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>查詢某天所有相機價格</h1>
+  <div style="text-align:center; margin-bottom: 18px;">
+    <input type="date" id="dateInput" />
+    <button onclick="search()">查詢</button>
+  </div>
+  <ul id="resultList"></ul>
+  <h2>物價變化表</h2>
+  <table border="1" id="priceTable">
+    <thead>
+      <tr>
+        <th>相機名稱</th>
+        <th>日期</th>
+        <th>價格</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+<script>
+  async function search() {
+    const date = document.getElementById('dateInput').value;
+    if (!date) {
+      alert('請輸入日期');
+      return;
+    }
+
+    const res = await fetch(`http://localhost:3000/api/price?date=${date}`);
+    const data = await res.json();
+
+    const list = document.getElementById('resultList');
+    list.innerHTML = '';
+
+    if (data.length === 0) {
+      list.innerHTML = '<li>查無資料</li>';
+      return;
+    }
+
+    data.forEach(item => {
+      const li = document.createElement('li');
+      li.textContent = `${item.camera_name}：${item.price} 元`;
+      list.appendChild(li);
+    });
+  }
+
+  async function showAllPrices() {
+    const res = await fetch('http://localhost:3000/api/quotes');
+    const data = await res.json();
+    const tbody = document.querySelector('#priceTable tbody');
+    tbody.innerHTML = '';
+    if (data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="3">查無資料</td></tr>';
+      return;
+    }
+    data.forEach(item => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${item.camera_name}</td><td>${item.date}</td><td>${item.price}</td>`;
+      tbody.appendChild(tr);
+    });
+  }
+
+  // 頁面載入時自動顯示所有價格
+  window.onload = showAllPrices;
+</script>
+</body>
+</html>
